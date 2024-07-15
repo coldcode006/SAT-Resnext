@@ -122,13 +122,13 @@ def train_model(dataset=dataset, save_dir=save_dir, num_classes=num_classes, lr=
     train_dataloader = DataLoader(VideoDataset(dataset=dataset, split='train', clip_len=16), batch_size=8, shuffle=True,
                                   num_workers=0)
     val_dataloader = DataLoader(VideoDataset(dataset=dataset, split='val', clip_len=16), batch_size=8, num_workers=0)
+    test_dataloader  = DataLoader(VideoDataset(dataset=dataset, split='test', clip_len=16), batch_size=8, num_workers=0)
 
 
     trainval_loaders = {'train': train_dataloader, 'val': val_dataloader}
     trainval_sizes = {x: len(trainval_loaders[x].dataset) for x in ['train', 'val']}
-    # test_size = len(test_dataloader.dataset)
+    test_size = len(test_dataloader.dataset)
     # 开始训练
-
     for epoch in range(resume_epoch, num_epochs):
         # each epoch has a training and validation step
         for phase in ['train', 'val']:
