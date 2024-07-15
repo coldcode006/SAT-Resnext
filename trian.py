@@ -5,15 +5,15 @@ import os
 import glob
 from tqdm import tqdm
 from focal_loss import FocalLoss
-
 import torch
 from tensorboardX import SummaryWriter
 from torch import nn, optim
 from torch.utils.data import DataLoader
 from torch.autograd import Variable
+from SAT import generate_model_resnext
 
 # from dataloaders.dataset import VideoDataset
-# from network import C3D_model, R2Plus1D_model, R3D_model,resnet
+
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Device being used:", device)
@@ -47,9 +47,8 @@ else:
 
 save_dir = os.path.join(save_dir_root, 'run', 'run_' + str(run_id + 2))
 
-modelName = 'New_SA_ResneXt101'
+modelName = 'SAT_ResneXt101'
 saveName = modelName + '-' + dataset
-
 
 def train_model(dataset=dataset, save_dir=save_dir, num_classes=num_classes, lr=lr,
                 num_epochs=nEpochs, save_epoch=snapshot, useTest=useTest, test_interval=nTestInterval):
