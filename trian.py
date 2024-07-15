@@ -50,8 +50,6 @@ modelName = 'New_SA_ResneXt101'
 saveName = modelName + '-' + dataset
 
 
-# model=resnet.generate_model(50)
-
 def train_model(dataset=dataset, save_dir=save_dir, num_classes=num_classes, lr=lr,
                 num_epochs=nEpochs, save_epoch=snapshot, useTest=useTest, test_interval=nTestInterval):
     """
@@ -199,6 +197,35 @@ def train_model(dataset=dataset, save_dir=save_dir, num_classes=num_classes, lr=
             }, os.path.join(save_dir, 'models', saveName + '_epoch-' + str(epoch) + '.pth.tar'))
             print("Save model at {}\n".format(
                 os.path.join(save_dir, 'models', saveName + '_epoch-' + str(epoch) + '.pth.tar')))
+       if useTest and epoch % test_interval == (test_interval - 1):
+        model.eval()
+        start_time = timeit.default_timer()
+
+        running_loss = 0.0
+        running_corrects = 0.0
+
+        for inputs, labels in tqdm(test_dataloader):
+            inputs = inputs.to(device)
+            labels = labels.to(device)
+
+            with torch.no_grad():
+                outputs = model(inputs)
+            probs = nn.Softmax(dim=1)(outputs)
+            preds = torch.max(probs, 1)[1]
+            loss = criterion(outputs, labels.long())
+
+            running_loss += loss.item() * inputs.size(0)
+            running_corrects += torch.sum(preds == labels.data)
+
+        epoch_loss = running_loss / test_size
+        epoch_acc = running_corrects.double() / test_size
+
+        writer.add_scalar('C:/Users/Administrator/Desktop/pytorch-video-recognition-master/data/test_loss_epoch', epoch_loss, epoch)
+        writer.add_scalar('C:/Users/Administrator/Desktop/pytorch-video-recognition-master/data/test_acc_epoch', epoch_acc, epoch)
+
+        print("[test] Epoch: {}/{} Loss: {} Acc: {}".format(epoch+1, nEpochs, epoch_loss, epoch_acc))
+        stop_time = timeit.default_timer()
+        print("Execution time: " + str(stop_time - start_time) + "\n")
 
 
     writer.close()
