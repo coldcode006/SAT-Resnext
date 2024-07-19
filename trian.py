@@ -10,7 +10,6 @@ from tensorboardX import SummaryWriter
 from torch import nn, optim
 from torch.utils.data import DataLoader
 from torch.autograd import Variable
-from SAT import generate_model_resnext
 
 # from dataloaders.dataset import VideoDataset
 
