@@ -68,7 +68,6 @@ def train_model(dataset=dataset, save_dir=save_dir, num_classes=num_classes, lr=
 
     new_conv1 = nn.Conv3d(64, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
     new_conv1_weight = nn.Parameter(new_conv1.weight)
-    # 替换模型中指定卷积层的参数
     model.layer1[0].downsample[0].weight = new_conv_weight
     model.layer1[0].conv1.weight = new_conv1_weight
     checkpoint = torch.load("/home/featurize/work/resnext-101-64f-kinetics.pth")
@@ -99,7 +98,7 @@ def train_model(dataset=dataset, save_dir=save_dir, num_classes=num_classes, lr=
     optimizer = optim.SGD(train_params, lr=lr, momentum=0.9, weight_decay=5e-4)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=50,
                                           gamma=0.1)  # the scheduler divides the lr by 10 every 10 epochs
-    # 是否接着上一次训练
+
     if resume_epoch == 0:
         print("Training {} from scratch...".format(modelName))
     else:
@@ -110,14 +109,14 @@ def train_model(dataset=dataset, save_dir=save_dir, num_classes=num_classes, lr=
             os.path.join(save_dir, 'models', saveName + '_epoch-' + str(resume_epoch - 1) + '.pth.tar')))
         model.load_state_dict(checkpoint['state_dict'])
         # optimizer.load_state_dict(checkpoint['opt_dict'])
-    # 计算模型总参数
+
     print('Total params: %.2fM' % (sum(p.numel() for p in model.parameters()) / 1000000.0))
     model.to(device)
     criterion.to(device)
 
     log_dir = os.path.join(save_dir, 'models', datetime.now().strftime('%b%d_%H-%M-%S') + '_' + socket.gethostname())
     writer = SummaryWriter(log_dir=log_dir)
-    # 导入数据
+
     print('Training model on {} dataset...'.format(dataset))
     train_dataloader = DataLoader(VideoDataset(dataset=dataset, split='train', clip_len=16), batch_size=8, shuffle=True,
                                   num_workers=0)
@@ -128,7 +127,7 @@ def train_model(dataset=dataset, save_dir=save_dir, num_classes=num_classes, lr=
     trainval_loaders = {'train': train_dataloader, 'val': val_dataloader}
     trainval_sizes = {x: len(trainval_loaders[x].dataset) for x in ['train', 'val']}
     test_size = len(test_dataloader.dataset)
-    # 开始训练
+
     for epoch in range(resume_epoch, num_epochs):
         # each epoch has a training and validation step
         for phase in ['train', 'val']:
