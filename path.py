@@ -24,6 +24,7 @@ class Path(object):
             # Save preprocess data into output_dir
             output_dir = '/home/featurize/data_processed'
 
+            
             return root_dir, output_dir
         elif database == 'hmdb51':
             # folder that contains class labels
