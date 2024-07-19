@@ -73,8 +73,8 @@ class sat_layer3d(nn.Module):
         x = x.reshape(b * self.groups, -1, d, h, w)
         x_0, x_1 = x.chunk(2, dim=1)
 
-        # avg_pool1 = nn.AdaptiveAvgPool3d((d,1,1))
-        # avg_pool2 = nn.AdaptiveAvgPool3d((1,h,w))
+        avg_pool1 = nn.AdaptiveAvgPool3d((d,1,1))
+        avg_pool2 = nn.AdaptiveAvgPool3d((1,h,w))
         # channel attention
         xn = self.avg_pool1(x_0)
         xn = self.cweight * xn + self.cbias
@@ -82,14 +82,11 @@ class sat_layer3d(nn.Module):
 
 
         # spatial attention
-        xs_1 = torch.mean(x_1, dim=1, keepdim=True)
-        xs_2 = torch.max(x_1, dim=1, keepdim=True)[0]
-        xs = torch.cat([xs_1, xs_2], dim=1)
+        xs=self.avg_pool2(x_1)
+        xs = self.gn(xs)
+        xs = self.sweight * xs + self.sbias
+        xs = x_1 * self.sigmoid(xs)
 
-        xs = self.conv1(xs)
-
-        xs = self.sigmoid(xs)
-        x_out = xs.expand_as(x_1) * x_1
         # concatenate along channel axis
         out = torch.cat([xn, x_out], dim=1)
         out = out.reshape(b, -1, d, h, w)
@@ -155,10 +152,10 @@ class ResNeXt(nn.Module):
         
         self.avgpool = nn.AdaptiveAvgPool3d((1, 1, 1))
         self.fc = nn.Linear(cardinality * 32 * block.expansion, n_classes)
-        self.sa1 = sa_layer3d(256,input_size[0])
-        self.sa2 = sa_layer3d(512,input_size[1])
-        self.sa3 = sa_layer3d(1024,input_size[2])
-        self.sa4 = sa_layer3d(2048,input_size[3])
+        self.sat1 = sat_layer3d(256,input_size[0])
+        self.sat2 = sat_layer3d(512,input_size[1])
+        self.sat3 = sat_layer3d(1024,input_size[2])
+        self.sat4 = sat_layer3d(2048,input_size[3])
         
         
         for m in self.modules():
@@ -214,13 +211,13 @@ class ResNeXt(nn.Module):
             x = self.maxpool(x)
 
         x = self.layer1(x)
-        x = self.sa1(x)
+        x = self.sat1(x)
         x = self.layer2(x)
-        x = self.sa2(x)
+        x = self.sat2(x)
         x = self.layer3(x)
-        x = self.sa3(x)
+        x = self.sat3(x)
         x = self.layer4(x)
-        x = self.sa4(x)
+        x = self.sat4(x)
 
         x = self.avgpool(x)
 
@@ -231,7 +228,6 @@ class ResNeXt(nn.Module):
     
 def generate_model_resnext(model_depth, **kwargs):
     assert model_depth in [50, 101, 152, 200]
-    
     x1=torch.randn([4,256,8,28,28])
     x2=torch.randn([4,256,4,14,14])
     x3=torch.randn([4,256,2,7,7])
