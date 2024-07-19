@@ -15,6 +15,7 @@ from SAT import generate_model_resnext
 # from dataloaders.dataset import VideoDataset
 
 
+
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Device being used:", device)
 
