@@ -220,15 +220,4 @@ def generate_model_resnext(model_depth, **kwargs):
 
 model=generate_model_resnext(101)
 
-model.layer1[0].downsample[0]=nn.Conv3d(64, 256, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
-model.layer1[0].conv1=nn.Conv3d(64, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
-
-new_conv=nn.Conv3d(64, 256, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
-new_conv_weight = nn.Parameter(new_conv.weight)
-
-new_conv1=nn.Conv3d(64, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
-new_conv1_weight = nn.Parameter(new_conv1.weight)
-# 替换模型中指定卷积层的参数
-model.layer1[0].downsample[0].weight = new_conv_weight
-model.layer1[0].conv1.weight=new_conv1_weight
 
