@@ -13,6 +13,7 @@ class VideoDataset(Dataset):
         folder = os.path.join(self.output_dir, split)
         self.clip_len = clip_len
         self.split = split
+        
 
         # The following three parameters are chosen as described in the paper section 4.1
         self.resize_height = 128
